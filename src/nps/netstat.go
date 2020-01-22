@@ -14,9 +14,10 @@ type NetProcess struct {
 }
 
 func RadNetProcessLocal() (nets []NetProcess) {
-	nets = make([]NetProcess, 0)
 
+	nets = make([]NetProcess, 0)
 	netKv := make(map[string]NetProcess)
+
 	output := tool.CallShell("netstat -tunlp")
 
 	for i, process := range strings.Split(output, "\n") {
