@@ -1,16 +1,18 @@
 package nps
 
 import (
+	"fmt"
 	"sort"
 	"strings"
 	"tool"
 )
 
 type NetProcess struct {
-	PID      string
-	Name     string
-	Protocol string
-	Listen   string
+	PID    string
+	Name   string
+	Proto  string
+	Listen string
+	Count  int
 }
 
 func RadNetProcessLocal() (nets []NetProcess) {
@@ -57,17 +59,20 @@ func RadNetProcessLocal() (nets []NetProcess) {
 		}
 		//
 		obj := NetProcess{
-			Name:     strings.TrimSpace(name),
-			PID:      pid,
-			Protocol: item[0],
-			Listen:   item[1],
+			Name:   strings.TrimSpace(name),
+			PID:    pid,
+			Proto:  item[0],
+			Listen: item[1],
 		}
 		//
-		if this, has := netKv[obj.Name]; !has {
-			netKv[obj.Name] = obj
+		index := obj.Name + obj.Proto
+		if this, has := netKv[index]; !has {
+			obj.Count = 1
+			netKv[index] = obj
 		} else {
+			this.Count++
 			this.Listen += "," + obj.Listen
-			netKv[name] = this
+			netKv[index] = this
 		}
 	}
 
@@ -75,6 +80,8 @@ func RadNetProcessLocal() (nets []NetProcess) {
 		it.Listen = strings.ReplaceAll(it.Listen, "0.0.0.0", "::")
 		it.Listen = strings.ReplaceAll(it.Listen, ":::", "")
 		it.Listen = strings.ReplaceAll(it.Listen, "127.0.0.1", "local")
+		it.Name = fmt.Sprintf("%s*%d", it.Name, it.Count)
+		//it.Name = fmt.Sprintf("%d*%s", it.Count, it.Name)
 		nets = append(nets, it)
 	}
 
